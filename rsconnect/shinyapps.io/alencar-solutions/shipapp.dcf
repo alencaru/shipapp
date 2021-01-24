@@ -5,8 +5,8 @@ account: alencar-solutions
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3513306
-bundleId: 4135963
+bundleId: 4135987
 url: https://alencar-solutions.shinyapps.io/shipapp/
-when: 1611486053.00624
+when: 1611486947.06998
 asMultiple: FALSE
 asStatic: FALSE
