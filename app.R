@@ -24,12 +24,10 @@ source("C:\\Users\\alencar\\Documents\\R_apps\\appsilon_ship_app\\modules\\depen
 #-----------------------------
 # tables
 
-dTable <- readRDS(
-  "C:\\Users\\alencar\\Documents\\R_apps\\shiny_ship_app\\shipapp\\data\\tab_a.rds")
-ships_data <- readRDS(
-  "C:\\Users\\alencar\\Documents\\R_apps\\shiny_ship_app\\shipapp\\data\\ships_data.rds")
+dTable <- readRDS("tab_a.rds")
+ships_data <- readRDS("ships_data.rds")
 
-countries <- readxl::read_excel("C:\\Users\\alencar\\Documents\\R_apps\\shiny_ship_app\\shipapp\\data\\countries_code.xlsx")
+countries <- readxl::read_excel("countries_code.xlsx")
 
 
 testthat::expect_is(dTable, "data.frame")

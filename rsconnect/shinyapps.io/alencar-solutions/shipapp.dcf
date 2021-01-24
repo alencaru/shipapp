@@ -1,0 +1,12 @@
+name: shipapp
+title: shipapp
+username:
+account: alencar-solutions
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3513306
+bundleId: 4135937
+url: https://alencar-solutions.shinyapps.io/shipapp/
+when: 1611485063.58764
+asMultiple: FALSE
+asStatic: FALSE
