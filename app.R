@@ -2,7 +2,9 @@ library(shiny)
 library(shiny.semantic)
 library(geosphere)
 library(tidyverse)
-
+library(lubridate)
+library(leaflet)
+library(leaflet.extras2)
 #-------------------------------------------------------------------------------
 
 my_layout <- grid_template(default = list(
@@ -23,14 +25,22 @@ source("C:\\Users\\alencar\\Documents\\R_apps\\appsilon_ship_app\\modules\\depen
 # tables
 
 dTable <- readRDS(
-  "C:\\Users\\alencar\\Documents\\R_apps\\appsilon_ship_app\\data\\tab_a.rds")
+  "C:\\Users\\alencar\\Documents\\R_apps\\shiny_ship_app\\shipapp\\data\\tab_a.rds")
 ships_data <- readRDS(
-  "C:\\Users\\alencar\\Documents\\R_apps\\appsilon_ship_app\\data\\ships_data.rds")
+  "C:\\Users\\alencar\\Documents\\R_apps\\shiny_ship_app\\shipapp\\data\\ships_data.rds")
+
+countries <- readxl::read_excel("C:\\Users\\alencar\\Documents\\R_apps\\shiny_ship_app\\shipapp\\data\\countries_code.xlsx")
+
 
 testthat::expect_is(dTable, "data.frame")
 testthat::expect_is(ships_data, "data.frame")
 
-dTable <- dTable %>% left_join(ships_data)
+dTable <- dTable %>% 
+  left_join(ships_data) %>%
+  left_join(countries) %>%
+  as.data.frame(.) %>%
+  mutate(year = year(DATETIME)
+        ,month = month(DATETIME))
 
 rm(ships_data)
 
@@ -69,7 +79,8 @@ ui <- semanticPage(
            
            div(
              
-             div(style="display: inline-block;vertical-align:top; width: 150px; margin: 15px;",
+             div(
+                 style="display: inline-block;vertical-align:top; width: 150px; margin: 15px;",
                  p("Ship type:"),
                  div(
                    dropdown_input( "shiptype"
@@ -78,7 +89,8 @@ ui <- semanticPage(
                    ) # end dropdown1
                  )), # end div1
              
-             div(style="display: inline-block;vertical-align:top; width: 250px; margin: 15px;",
+             div(
+                 style="display: inline-block;vertical-align:top; width: 250px; margin: 15px;",
                  p("Ship name:"),
                  div(
                    dropdown_input( "shipname"
@@ -140,7 +152,7 @@ server <- function(input, output, session){
   
   #-----------------------------  
   # table
-  tab_reactive <- reactive({
+  table_reactive <- reactive({
     
     shiny::validate(
       shiny::need(input$shiptype,"Select shiptype"),
@@ -149,9 +161,8 @@ server <- function(input, output, session){
  
     dTable %>%
       filter(ship_type == input$shiptype) %>%
-      filter(SHIPNAME == input$shipname
-      )
-    
+      filter(SHIPNAME == input$shipname ) 
+
   })
   # 
   #-------------------------------------------------------------------------------
@@ -160,12 +171,15 @@ server <- function(input, output, session){
   note <- reactive({
     paste0(
        "<strong>Vessel type: </strong>"
-      , tab_reactive()$ship_type, "<br>"
+      , table_reactive()$ship_type, "<br>"
       , "<strong>Distance covered: </strong>"
-      , as.integer(tab_reactive()$distance*10)
+      , as.integer(table_reactive()$distance*10)
       , " (meters)", "<br>"
-      , "<strong> Country inicials: </strong>"
-      , tab_reactive()$FLAG, "<br>" 
+      , "<strong> Country name: </strong>"
+      , table_reactive()$country, "<br>" 
+      , "<strong>Year: </strong>"
+      , table_reactive()$year, "<br>"
+      
       )
   })
 
@@ -174,39 +188,37 @@ server <- function(input, output, session){
   # map
   output$mymap <- renderLeaflet({
     
-    testthat::expect_is(tab_reactive(), "data.frame")
+    testthat::expect_is(table_reactive(), "data.frame")
     
-    tab_reactive() %>%
-      leaflet() %>%
+  table_reactive() %>%
+       leaflet() %>%
       addTiles() %>%
-      addPolylines(~c(LON, LON2), ~c(LAT, LAT2)
-                   ,  weight = 2
+      addPolylines( ~c(LON, LON2), ~c(LAT, LAT2)
+                   , weight = 2
                    , color = "red"
-                   
                    ) %>%
       addMarkers(
           ~LON
         , ~LAT
-        , popup = paste0(  "<strong>LAT-LONG: </strong>"
-                         , tab_reactive()$LAT, " "
-                         , tab_reactive()$LON, "<br>")
+        , popup = paste0("<strong>LAT-LONG: </strong>"
+                        , table_reactive()$LAT, " "
+                        , table_reactive()$LON, "<br>")
         , label = paste0("Start point: ", "Click to see detailes")
         #, icon = point
-      ) %>%
-      addMarkers(    ~LON2
-                   , ~LAT2
-                   , popup = paste0(
+       ) %>%
+       addMarkers(~LON2
+                , ~LAT2
+                , popup = paste0(
                        "<strong>Distance (in meters): </strong>"
-                     , (tab_reactive()$distance*10),"<br>"
-                     , "<strong>Date (inicial): </strong>"
-                     , tab_reactive()$DATETIME, "<br>"
-                     , "<strong>LAT-LONG: </strong>"
-                     , tab_reactive()$LAT2, " "
-                     , tab_reactive()$LON2, "<br>"
-                   )
-                   , label = paste0("End point: ", "Click to see detailes")
-                   #, icon = ship_icon
-                   
+                , (table_reactive()$distance*10),"<br>"
+                , "<strong>Date (inicial): </strong>"
+                , table_reactive()$DATETIME, "<br>"
+                , "<strong>LAT-LONG: </strong>"
+                , table_reactive()$LAT2, " "
+                , table_reactive()$LON2, "<br>"
+               )
+                , label = paste0("End point: ", "Click to see detailes")
+                #, icon = ship_icon
       ) %>%
       addControl(note(), position = "topright")
   }) # map end
