@@ -18,8 +18,8 @@ my_layout <- grid_template(default = list(
 #-------------------------------------------------------------------------------
 # modules ----
 
-source("C:\\Users\\alencar\\Documents\\R_apps\\appsilon_ship_app\\modules\\dependen_dropdown.r")
-#source("C:\\Users\\alencar\\Documents\\R_apps\\appsilon_ship_app\\modules\\leaf_module.r")
+source("modules/dependen_dropdown.r")
+#source("/modules/leaf_module.r")
 
 #-----------------------------
 # tables
